@@ -1,12 +1,5 @@
 <script setup lang="ts">
-interface BlockState {
-  x: number
-  y: number
-  revealed: boolean
-  mine?: boolean
-  flagged?: boolean
-  adjacentMines?: number
-}
+import type { BlockState } from '~/types'
 
 const directions = [
   [-1, -1], [-1, 0], [-1, 1],
@@ -27,7 +20,7 @@ const numberColor = [
 ]
 const WIDTH = 5
 const HIGHT = 5
-const state = reactive(
+const state = ref(
   Array.from({ length: HIGHT }, (_, y) =>
     Array.from({ length: WIDTH }, (_, x): BlockState => ({
       x, y, adjacentMines: 0, revealed: false,
@@ -59,7 +52,7 @@ function onRightClick(block: BlockState) {
 }
 
 function generateMines(initial: BlockState) {
-  for (const row of state) {
+  for (const row of state.value) {
     for (const block of row) {
       if (Math.abs(initial.x - block.x) < 1)
         continue
@@ -94,7 +87,7 @@ function extendZero(block: BlockState) {
 
 // 遍历八个方向
 function updateNumbers() {
-  state.forEach((row, y) => {
+  state.value.forEach((row, y) => {
     row.forEach((block, x) => {
       if (block.mine)
         return
@@ -114,7 +107,7 @@ function getSiblings(block: BlockState) {
     const y2 = block.y + dy
     if (x2 < 0 || x2 >= WIDTH || y2 < 0 || y2 >= HIGHT)
       return undefined
-    return state[y2][x2]
+    return state.value[y2][x2]
   })
   // 过滤underfined
     .filter(Boolean) as BlockList[]
@@ -135,7 +128,7 @@ function checkGameState() {
   if (!mineGenerated)
     return
 
-  const blocks = state.flat()
+  const blocks = state.value.flat()
   /*
     every 是 JavaScript 数组的一个高阶函数，它用于判断数组中的每个元素是否都满足某个条件
     个 block 要么是已经被揭示 (revealed 属性为 true)，要么是被标记为旗子 (flagged 属性为 true)
